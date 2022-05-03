@@ -2,13 +2,35 @@ package command
 
 import (
 	"log"
+	"os"
 
 	"github.com/mitchellh/cli"
 )
 
 func CommandFactory() map[string]cli.CommandFactory {
 
-	commands := map[string]cli.CommandFactory{}
+	coloredUI := cli.ColoredUi{
+		ErrorColor: cli.UiColorRed,
+		WarnColor:  cli.UiColorYellow,
+		Ui: &cli.BasicUi{
+			Reader:      os.Stdin,
+			Writer:      os.Stdout,
+			ErrorWriter: os.Stderr,
+		},
+	}
+
+	commands := map[string]cli.CommandFactory{
+		"encrypt": func() (cli.Command, error) {
+			return &EncryptCommand{
+				ui: &coloredUI,
+			}, nil
+		},
+		"decrypt": func() (cli.Command, error) {
+			return &DecryptCommand{
+				ui: &coloredUI,
+			}, nil
+		},
+	}
 	return commands
 
 }
@@ -16,10 +38,11 @@ func CommandFactory() map[string]cli.CommandFactory {
 func Run(args []string) int {
 
 	cli := cli.CLI{
-		Name:     "Keyring Practice",
-		Version:  "0.1.0",
-		Args:     args,
-		Commands: CommandFactory(),
+		Name:         "keyring",
+		Version:      "0.1.0",
+		Args:         args,
+		Commands:     CommandFactory(),
+		Autocomplete: true,
 	}
 
 	exitcode, err := cli.Run()
