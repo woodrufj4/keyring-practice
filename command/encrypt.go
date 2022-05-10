@@ -1,8 +1,6 @@
 package command
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
 	"flag"
@@ -12,6 +10,7 @@ import (
 	"os"
 
 	"github.com/mitchellh/cli"
+	"github.com/woodrufj4/keyring-practice/internal"
 )
 
 const (
@@ -48,23 +47,6 @@ Usage: keying encrypt [options] <plaintext>
 	return fmt.Sprintf(helpText, EnvSecretKey)
 }
 
-func aesFromKey(key []byte) (cipher.AEAD, error) {
-
-	aesBlock, err := aes.NewCipher(key)
-
-	if err != nil {
-		return nil, err
-	}
-
-	gcm, err := cipher.NewGCM(aesBlock)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return gcm, nil
-}
-
 func (ec *EncryptCommand) Run(args []string) int {
 
 	var secretKey string
@@ -93,7 +75,7 @@ func (ec *EncryptCommand) Run(args []string) int {
 
 	plaintext := fs.Arg(0)
 
-	gcm, err := aesFromKey([]byte(secretKey))
+	gcm, err := internal.AESFromKey([]byte(secretKey))
 
 	if err != nil {
 		ec.ui.Error(fmt.Sprintf("failed to generate GCM. %s", err.Error()))

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/mitchellh/cli"
+	"github.com/woodrufj4/keyring-practice/internal"
 )
 
 type DecryptCommand struct {
@@ -69,7 +70,7 @@ func (dc *DecryptCommand) Run(args []string) int {
 		return 1
 	}
 
-	gcm, err := aesFromKey([]byte(secretKey))
+	gcm, err := internal.AESFromKey([]byte(secretKey))
 
 	if err != nil {
 		dc.ui.Error(fmt.Sprintf("failed to generate GCM. %s", err.Error()))
