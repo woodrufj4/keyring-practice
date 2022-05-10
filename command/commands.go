@@ -30,6 +30,11 @@ func CommandFactory() map[string]cli.CommandFactory {
 				ui: &coloredUI,
 			}, nil
 		},
+		"init": func() (cli.Command, error) {
+			return &InitCommand{
+				ui: &coloredUI,
+			}, nil
+		},
 	}
 	return commands
 
