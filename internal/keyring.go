@@ -39,6 +39,47 @@ func NewKeyRing() *Keyring {
 	}
 }
 
+// InitNewKeyRing generates an initialized keyring with a master key and an
+// initial encryption key.
+func InitNewKeyRing() (*Keyring, error) {
+
+	masterKey, err := GenerateKey()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate master key: %s", err.Error())
+	}
+
+	firstKey, err := GenerateKey()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate initial encryption key: %s", err.Error())
+	}
+
+	keyRing := &Keyring{
+		keys:       make(map[uint32]*Key, 0),
+		activeTerm: 0,
+	}
+
+	err = keyRing.SetRootKey(masterKey)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate initial encryption key: %s", err.Error())
+	}
+
+	err = keyRing.AddKey(&Key{
+		Term:    1,
+		Value:   firstKey,
+		Version: 1,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to set initial encryption key on keyring: %s", err.Error())
+	}
+
+	return keyRing, nil
+
+}
+
 // SetRootKey sets the root key.
 func (k *Keyring) SetRootKey(key []byte) error {
 
