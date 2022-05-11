@@ -1,6 +1,7 @@
 package command
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	"github.com/mitchellh/cli"
@@ -58,7 +59,16 @@ func (ic *InitCommand) Run(args []string) int {
 
 	// @TODO: encrypt and perist initial keyring
 
-	// return success
+	// display root token to user
 	ic.ui.Info("Initialized keyring")
+
+	msg := `
+This is the one and only time the root token will be displayed!
+
+root token: %s
+`
+
+	ic.ui.Warn(fmt.Sprintf(msg, base64.StdEncoding.EncodeToString(keyring.RootKey())))
+
 	return 0
 }
