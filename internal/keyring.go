@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -19,6 +20,11 @@ type Key struct {
 	Value       []byte
 	Version     uint
 	InstallTime time.Time
+}
+
+type EncodedKeyring struct {
+	MasterKey []byte
+	Keys      []*Key
 }
 
 // GenerateKey is used to generate a new key vaule
@@ -78,6 +84,48 @@ func InitNewKeyRing() (*Keyring, error) {
 
 	return keyRing, nil
 
+}
+
+func DeserializeKeyring(buf []byte) (*Keyring, error) {
+
+	var enc EncodedKeyring
+
+	err := json.Unmarshal(buf, &enc)
+
+	if err != nil {
+		return nil, err
+	}
+
+	keyring := NewKeyRing()
+
+	err = keyring.SetRootKey(enc.MasterKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, key := range enc.Keys {
+		keyring.keys[key.Term] = key
+
+		if key.Term > keyring.activeTerm {
+			keyring.activeTerm = key.Term
+		}
+	}
+
+	return keyring, nil
+}
+
+func (k *Keyring) Serialize() ([]byte, error) {
+
+	enc := &EncodedKeyring{
+		MasterKey: k.RootKey(),
+	}
+
+	for _, key := range k.keys {
+		enc.Keys = append(enc.Keys, key)
+	}
+
+	return json.Marshal(enc)
 }
 
 // SetRootKey sets the root key.

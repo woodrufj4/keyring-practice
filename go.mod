@@ -2,7 +2,10 @@ module github.com/woodrufj4/keyring-practice
 
 go 1.18
 
-require github.com/mitchellh/cli v1.1.3
+require (
+	github.com/mitchellh/cli v1.1.3
+	go.etcd.io/bbolt v1.3.6
+)
 
 require (
 	github.com/Masterminds/goutils v1.1.0 // indirect
@@ -24,5 +27,5 @@ require (
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
-	golang.org/x/sys v0.0.0-20190412213103-97732733099d // indirect
+	golang.org/x/sys v0.0.0-20200923182605-d9f96fdee20d // indirect
 )
