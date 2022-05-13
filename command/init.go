@@ -7,14 +7,8 @@ import (
 	"fmt"
 
 	"github.com/mitchellh/cli"
-	"github.com/woodrufj4/keyring-practice/backend"
 	"github.com/woodrufj4/keyring-practice/backend/bbolt"
 	"github.com/woodrufj4/keyring-practice/internal"
-)
-
-const (
-	coreKeyringPath      = "core/keyring"
-	coreKeyringCipherKey = "keyringCipher"
 )
 
 type InitCommand struct {
@@ -78,61 +72,36 @@ func (ic *InitCommand) Run(args []string) int {
 
 	defer fileBackend.Cleanup(defaultCtx)
 
-	// check if keyring exists
-	existingEntries, err := fileBackend.Get(defaultCtx, coreKeyringPath)
+	barrier, err := internal.NewBarrier(fileBackend)
 
 	if err != nil {
-		ic.ui.Error(fmt.Sprintf("failed to validate if backend is initialized: %s", err.Error()))
+		ic.ui.Error(fmt.Sprintf("failed to instantiate barrier: %s", err.Error()))
 		return 1
 	}
 
-	if existingEntries != nil {
-		// keyring is already initialized
-		ic.ui.Info("keyring has already been initialized")
+	exists, err := barrier.KeyringPersisted(defaultCtx)
+
+	if err != nil {
+		ic.ui.Error(fmt.Sprintf("failed to validate if barrier pre-exists: %s", err.Error()))
+		return 1
+	}
+
+	if exists {
+		ic.ui.Info("keyring already initialized")
 		return 0
 	}
 
-	// Firstly, generate the master key
-	keyring, err := internal.InitNewKeyRing()
+	initialKey, err := barrier.GenerateKey()
 
 	if err != nil {
-		ic.ui.Error(fmt.Sprintf("failed to initialize keyring: %s", err.Error()))
+		ic.ui.Error(fmt.Sprintf("failed to generate initial root token: %s", err.Error()))
 		return 1
 	}
 
-	gcm, err := internal.AESFromKey(keyring.RootKey())
+	err = barrier.Initialize(defaultCtx, string(initialKey))
 
 	if err != nil {
-		ic.ui.Error(fmt.Sprintf("failed to generate GCM: %s", err.Error()))
-		return 1
-	}
-
-	keyringBytes, err := keyring.Serialize()
-
-	if err != nil {
-		ic.ui.Error(fmt.Sprintf("failed to serialize keyring: %s", err.Error()))
-		return 1
-	}
-
-	keyringCipher, err := internal.Encrypt(gcm, 0, keyringBytes)
-
-	if err != nil {
-		ic.ui.Error(fmt.Sprintf("failed to encrypt keyring: %s", err.Error()))
-		return 1
-	}
-
-	// encrypt and perist initial keyring
-	entries := []*backend.BackendEntry{
-		{
-			Key:   coreKeyringCipherKey,
-			Value: keyringCipher,
-		},
-	}
-
-	err = fileBackend.Put(defaultCtx, coreKeyringPath, entries)
-
-	if err != nil {
-		ic.ui.Error(fmt.Sprintf("failed to persist keying: %s", err.Error()))
+		ic.ui.Error(fmt.Sprintf("failed to initialize barrier: %s", err.Error()))
 		return 1
 	}
 
@@ -143,7 +112,7 @@ This is the one and only time the root token will be displayed!
 root token: %s
 `
 
-	ic.ui.Warn(fmt.Sprintf(msg, base64.StdEncoding.EncodeToString(keyring.RootKey())))
+	ic.ui.Warn(fmt.Sprintf(msg, base64.StdEncoding.EncodeToString(initialKey)))
 
 	return 0
 }
