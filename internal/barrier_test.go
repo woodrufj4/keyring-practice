@@ -138,6 +138,60 @@ func TestBarrierReInit(t *testing.T) {
 
 }
 
+func TestBarrierExists(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("to slow for testing.Short. IO operations")
+	}
+
+	fileBackend := setupBackend(t)
+
+	t.Cleanup(func() {
+
+		if shutdownErr := fileBackend.Cleanup(context.Background()); shutdownErr != nil {
+			t.Errorf("failed to cleanly shutdown the backend: %s", shutdownErr.Error())
+		}
+
+		if removeErr := os.Remove(DefaultTestKeyringPath); removeErr != nil {
+			t.Errorf("failed to remove backend artifact: %s", removeErr.Error())
+		}
+
+	})
+
+	barrier, err := NewBarrier(fileBackend)
+
+	if err != nil {
+		t.Fatalf("failed to instantiate barrier: %s", err.Error())
+	}
+
+	initialKey, err := barrier.GenerateKey()
+
+	if err != nil {
+		t.Fatalf("failed to generate random token: %s", err.Error())
+	}
+
+	err = barrier.Initialize(context.Background(), string(initialKey))
+
+	if err != nil {
+		t.Fatalf("failed to initialize barrier: %s", err.Error())
+	}
+
+	if !barrier.Initialized() {
+		t.Fatalf("expected barrier to be properly initialized")
+	}
+
+	exists, err := barrier.KeyringPersisted(context.Background())
+
+	if err != nil {
+		t.Fatalf("failed to validate if keyring is persistedL: %s", err.Error())
+	}
+
+	if !exists {
+		t.Fatalf("expected keyring to report it exists")
+	}
+
+}
+
 func setupBackend(t *testing.T) backend.Backend {
 	t.Helper()
 

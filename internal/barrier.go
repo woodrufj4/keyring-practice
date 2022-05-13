@@ -92,6 +92,31 @@ func (b *Barrier) Initialize(ctx context.Context, rootKey string) error {
 	return nil
 }
 
+func (b *Barrier) KeyringPersisted(ctx context.Context) (bool, error) {
+
+	if b.backend == nil {
+		return false, ErrBarrerInvalidBackend
+	}
+
+	// Check if there is a keyring in the backend
+	entries, err := b.backend.Get(ctx, keyringPath)
+
+	if err != nil {
+		return false, err
+	}
+
+	if entries == nil {
+		return false, nil
+	}
+
+	if entries[0].Key != keyringCipherKey {
+		return false, ErrKeyringCipherKeyInvalid
+	}
+
+	return true, nil
+
+}
+
 func (b *Barrier) Initialized() bool {
 	return b.initialized
 }
