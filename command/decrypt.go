@@ -20,7 +20,7 @@ func (dc DecryptCommand) Synopsis() string {
 
 func (dc DecryptCommand) Help() string {
 	helpText := `
-Usage: keying decrypt [options] <base64ciphertext>
+Usage: keying transit decrypt [options] <base64ciphertext>
 
   This decrypts a base64 encoded ciphertext into plain text.
 
@@ -34,7 +34,7 @@ Usage: keying decrypt [options] <base64ciphertext>
       variable will be used.
 `
 
-	return fmt.Sprintf(helpText, EnvSecretKey)
+	return fmt.Sprintf(helpText, EnvRootToken)
 }
 
 func (dc *DecryptCommand) Run(args []string) int {
@@ -50,7 +50,7 @@ func (dc *DecryptCommand) Run(args []string) int {
 	}
 
 	if secretKey == "" {
-		secretKey = os.Getenv(EnvSecretKey)
+		secretKey = os.Getenv(EnvRootToken)
 
 		if secretKey == "" {
 			dc.ui.Error("missing secret key")

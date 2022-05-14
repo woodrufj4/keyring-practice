@@ -20,18 +20,38 @@ func CommandFactory() map[string]cli.CommandFactory {
 	}
 
 	commands := map[string]cli.CommandFactory{
-		"encrypt": func() (cli.Command, error) {
-			return &EncryptCommand{
+		"delete": func() (cli.Command, error) {
+			return &KVDeleteCommand{
 				ui: &coloredUI,
 			}, nil
 		},
-		"decrypt": func() (cli.Command, error) {
-			return &DecryptCommand{
+		"get": func() (cli.Command, error) {
+			return &KVGetCommand{
 				ui: &coloredUI,
 			}, nil
 		},
 		"init": func() (cli.Command, error) {
 			return &InitCommand{
+				ui: &coloredUI,
+			}, nil
+		},
+		"put": func() (cli.Command, error) {
+			return &KVPutCommand{
+				ui: &coloredUI,
+			}, nil
+		},
+		"transit": func() (cli.Command, error) {
+			return &TransitCommand{
+				ui: &coloredUI,
+			}, nil
+		},
+		"transit decrypt": func() (cli.Command, error) {
+			return &DecryptCommand{
+				ui: &coloredUI,
+			}, nil
+		},
+		"transit encrypt": func() (cli.Command, error) {
+			return &EncryptCommand{
 				ui: &coloredUI,
 			}, nil
 		},

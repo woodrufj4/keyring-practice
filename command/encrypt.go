@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	EnvSecretKey = "SECRET_KEY"
+	EnvRootToken = "KEYRING_ROOT_TOKEN"
 )
 
 type EncryptCommand struct {
@@ -27,7 +27,7 @@ func (ec EncryptCommand) Synopsis() string {
 
 func (ec EncryptCommand) Help() string {
 	helpText := `
-Usage: keying encrypt [options] <plaintext>
+Usage: keying transit encrypt [options] <plaintext>
 
   This encrypts a plain text input into a base64 encoded ciphertext.
 
@@ -44,7 +44,7 @@ Usage: keying encrypt [options] <plaintext>
       AES-128, AES-192, or AES-256.
 `
 
-	return fmt.Sprintf(helpText, EnvSecretKey)
+	return fmt.Sprintf(helpText, EnvRootToken)
 }
 
 func (ec *EncryptCommand) Run(args []string) int {
@@ -60,7 +60,7 @@ func (ec *EncryptCommand) Run(args []string) int {
 	}
 
 	if secretKey == "" {
-		secretKey = os.Getenv(EnvSecretKey)
+		secretKey = os.Getenv(EnvRootToken)
 
 		if secretKey == "" {
 			ec.ui.Error("missing secret key")
