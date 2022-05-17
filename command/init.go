@@ -31,7 +31,6 @@ Usage: keyring init [options]
       Currently, only the 'file' type backend is supported,
       and is also the default. 
 
-
     File Backend Options:
 
       -filepath=<string>

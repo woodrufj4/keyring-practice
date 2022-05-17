@@ -33,7 +33,6 @@ Usage: keying get [options] <path>
 
     -root-token=<string>
       The root token to use for encryption.
-
       If not provided here, the '%s' environment
       variable will be used.
 

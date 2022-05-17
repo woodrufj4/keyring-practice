@@ -27,13 +27,12 @@ Usage: keying list [options] <path-prefix>
 
   Example:
 
-    $ keyring list secret
+    $ keyring list secret/path-prefix
 
   Options:
 
     -root-token=<string>
       The root token to access the keyring.
-
       If not provided here, the '%s' environment
       variable will be used.
 

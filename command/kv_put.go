@@ -44,7 +44,6 @@ Usage: keying put [options] <path> [data]
 
     -root-token=<string>
       The root token to use for encryption.
-
       If not provided here, the '%s' environment
       variable will be used.
 
@@ -52,7 +51,7 @@ Usage: keying put [options] <path> [data]
 
     -backend-type=<string>
       The type of backend to use.
-	  Currently, only the 'file' type backend is supported,
+      Currently, only the 'file' type backend is supported,
       and is also the default. 
 
 
