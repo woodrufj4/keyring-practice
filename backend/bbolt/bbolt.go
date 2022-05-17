@@ -199,6 +199,11 @@ func (b *BoltBackend) Delete(ctx context.Context, path string) error {
 	err = tx.DeleteBucket([]byte(path))
 
 	if err != nil {
+
+		if err == bolt.ErrBucketNotFound {
+			return tx.Commit()
+		}
+
 		rbErr := tx.Rollback()
 
 		if rbErr != nil {
