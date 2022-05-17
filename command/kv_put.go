@@ -108,6 +108,11 @@ func (kv *KVPutCommand) Run(args []string) int {
 		return 1
 	}
 
+	if len(kvPairs) == 0 {
+		kv.ui.Error("must provide key value data")
+		return 1
+	}
+
 	kvbackend, err := kv.setupBackend(defaultCtx, config)
 
 	if err != nil {
