@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 	"sync"
 
 	"github.com/woodrufj4/keyring-practice/backend"
@@ -20,7 +21,7 @@ const (
 	// keyringPath is the location of the keyring data. This is encrypted
 	// by the root key.
 	keyringPath      = "core/keyring"
-	keyringPrefix    = "core/"
+	KeyringPrefix    = "core/"
 	keyringCipherKey = "keyringCipher"
 )
 
@@ -361,7 +362,9 @@ func (b *Barrier) encrypt(gcm cipher.AEAD, term uint32, plain []byte) ([]byte, e
 
 func (b *Barrier) Decrypt(ctx context.Context, ciphertext []byte) ([]byte, error) {
 
-	gcm, err := b.aesFromTerm(b.keyring.activeTerm)
+	term := binary.BigEndian.Uint32(ciphertext[:termSize])
+
+	gcm, err := b.aesFromTerm(term)
 
 	if err != nil {
 		return nil, err
@@ -389,17 +392,75 @@ func (b *Barrier) decrypt(gcm cipher.AEAD, cipher []byte) ([]byte, error) {
 }
 
 func (b *Barrier) Put(ctx context.Context, path string, entries []*backend.BackendEntry) error {
-	return nil
+
+	b.sync.Lock()
+	defer b.sync.Unlock()
+
+	for _, entry := range entries {
+
+		cipher, err := b.Encrypt(ctx, entry.Value)
+
+		if err != nil {
+			return err
+		}
+
+		entry.Value = cipher
+	}
+
+	return b.backend.Put(ctx, path, entries)
 }
 
 func (b *Barrier) Get(ctx context.Context, path string) ([]*backend.BackendEntry, error) {
-	return nil, nil
+
+	b.sync.RLock()
+	defer b.sync.RUnlock()
+
+	entries, err := b.backend.Get(ctx, path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range entries {
+		plaintext, err := b.Decrypt(ctx, entry.Value)
+
+		if err != nil {
+			return nil, err
+		}
+
+		entry.Value = plaintext
+	}
+
+	return entries, nil
+
 }
 
 func (b *Barrier) List(ctx context.Context, pathPrefix string) ([]string, error) {
-	return nil, nil
+
+	b.sync.RLock()
+	defer b.sync.RUnlock()
+
+	list, err := b.backend.List(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	filteredList := make([]string, 0)
+
+	for _, str := range list {
+		if strings.HasPrefix(str, pathPrefix) {
+			filteredList = append(filteredList, str)
+		}
+	}
+
+	return filteredList, nil
 }
 
 func (b *Barrier) Delete(ctx context.Context, path string) error {
-	return nil
+
+	b.sync.Lock()
+	defer b.sync.Unlock()
+
+	return b.backend.Delete(ctx, path)
 }

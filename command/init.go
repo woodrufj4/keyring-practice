@@ -3,11 +3,10 @@ package command
 import (
 	"context"
 	"encoding/base64"
-	"flag"
 	"fmt"
+	"time"
 
 	"github.com/mitchellh/cli"
-	"github.com/woodrufj4/keyring-practice/backend/bbolt"
 	"github.com/woodrufj4/keyring-practice/internal"
 )
 
@@ -25,10 +24,18 @@ Usage: keyring init [options]
 
   Initializes the keyring and the datastore.
 
-  Options:
+  Backend Options:
 
-    -path=<string>
-      The file path where your secrets will be persisted to disc.
+    -backend-type=<string>
+      The type of backend to use.
+      Currently, only the 'file' type backend is supported,
+      and is also the default. 
+
+
+    File Backend Options:
+
+      -filepath=<string>
+        The file path where your secrets will be persisted to disc.
 `
 }
 
@@ -39,40 +46,32 @@ Usage: keyring init [options]
 // keyring.
 func (ic *InitCommand) Run(args []string) int {
 
-	var dbPath string
+	defaultCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
-	fs := flag.NewFlagSet("init", flag.ContinueOnError)
-	fs.StringVar(&dbPath, "path", "", "The file path to the local datastore")
-	err := fs.Parse(args)
+	defer cancel()
 
-	if err != nil {
-		ic.ui.Error(fmt.Sprintf("failed to parse args: %s", err.Error()))
-		return 1
-	}
-
-	// Check if there is an already initialized / persisted keyring
-	backendConfig := bbolt.DefaultConfig()
-
-	if dbPath != "" {
-		backendConfig.Path = dbPath
-	}
-
-	fileBackend, err := bbolt.NewBoltBackend(backendConfig)
-	defaultCtx := context.Background()
+	config, _, err := internal.ReadConfig(args)
 
 	if err != nil {
-		ic.ui.Error(fmt.Sprintf("failed to instantiate backend: %s", err.Error()))
+		ic.ui.Error(fmt.Sprintf("failed to read config: %s", err.Error()))
 		return 1
 	}
 
-	if err := fileBackend.Setup(defaultCtx); err != nil {
-		ic.ui.Error(fmt.Sprintf("failed to setup backend: %s", err.Error()))
+	initBackend, err := internal.SetupBackend(defaultCtx, config)
+
+	if err != nil {
+		ic.ui.Error(fmt.Sprintf("failed to configure backend: %s", err.Error()))
 		return 1
 	}
 
-	defer fileBackend.Cleanup(defaultCtx)
+	defer func() {
+		cleanupErr := initBackend.Cleanup(defaultCtx)
+		if cleanupErr != nil {
+			ic.ui.Warn(fmt.Sprintf("failed to gracefully shutdown backend: %s", cleanupErr.Error()))
+		}
+	}()
 
-	barrier, err := internal.NewBarrier(fileBackend)
+	barrier, err := internal.NewBarrier(initBackend)
 
 	if err != nil {
 		ic.ui.Error(fmt.Sprintf("failed to instantiate barrier: %s", err.Error()))

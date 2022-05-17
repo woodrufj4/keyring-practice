@@ -35,6 +35,11 @@ func CommandFactory() map[string]cli.CommandFactory {
 				ui: &coloredUI,
 			}, nil
 		},
+		"list": func() (cli.Command, error) {
+			return &KVListCommand{
+				ui: &coloredUI,
+			}, nil
+		},
 		"put": func() (cli.Command, error) {
 			return &KVPutCommand{
 				ui: &coloredUI,
