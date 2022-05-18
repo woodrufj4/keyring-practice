@@ -25,7 +25,7 @@ type Backend interface {
 	Setup(context.Context) error
 
 	// Cleanup is invoked during an unmounting or shutdown to allow
-	// it to hanlde cleanup like connection closing or releasing
+	// the backend to handle cleanup... like connection closing or releasing
 	// resource handles.
 	Cleanup(context.Context) error
 
@@ -38,7 +38,10 @@ type Backend interface {
 	// List reports the existing paths.
 	List(ctx context.Context) ([]string, error)
 
-	// Delete removes all secrets at the given path
+	// Delete removes all secrets at the given path.
+	//
+	// This should "succeed" in deleting even not-existing
+	// secrets at the provided path.
 	Delete(ctx context.Context, path string) error
 }
 
