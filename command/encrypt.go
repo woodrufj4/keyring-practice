@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	EnvRootToken = "KEYRING_ROOT_TOKEN"
+	EnvSecretKey = "KEYRING_SECRET_KEY"
 )
 
 type EncryptCommand struct {
@@ -44,7 +44,7 @@ Usage: keying transit encrypt [options] <plaintext>
       AES-128, AES-192, or AES-256.
 `
 
-	return fmt.Sprintf(helpText, EnvRootToken)
+	return fmt.Sprintf(helpText, EnvSecretKey)
 }
 
 func (ec *EncryptCommand) Run(args []string) int {
@@ -60,7 +60,7 @@ func (ec *EncryptCommand) Run(args []string) int {
 	}
 
 	if secretKey == "" {
-		secretKey = os.Getenv(EnvRootToken)
+		secretKey = os.Getenv(EnvSecretKey)
 
 		if secretKey == "" {
 			ec.ui.Error("missing secret key")

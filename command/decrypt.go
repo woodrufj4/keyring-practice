@@ -34,7 +34,7 @@ Usage: keying transit decrypt [options] <base64ciphertext>
       variable will be used.
 `
 
-	return fmt.Sprintf(helpText, EnvRootToken)
+	return fmt.Sprintf(helpText, EnvSecretKey)
 }
 
 func (dc *DecryptCommand) Run(args []string) int {
@@ -50,7 +50,7 @@ func (dc *DecryptCommand) Run(args []string) int {
 	}
 
 	if secretKey == "" {
-		secretKey = os.Getenv(EnvRootToken)
+		secretKey = os.Getenv(EnvSecretKey)
 
 		if secretKey == "" {
 			dc.ui.Error("missing secret key")
