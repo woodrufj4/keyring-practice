@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	EnvSecretKey = "SECRET_KEY"
+	EnvSecretKey = "KEYRING_SECRET_KEY"
 )
 
 type EncryptCommand struct {
@@ -27,7 +27,7 @@ func (ec EncryptCommand) Synopsis() string {
 
 func (ec EncryptCommand) Help() string {
 	helpText := `
-Usage: keying encrypt [options] <plaintext>
+Usage: keying transit encrypt [options] <plaintext>
 
   This encrypts a plain text input into a base64 encoded ciphertext.
 

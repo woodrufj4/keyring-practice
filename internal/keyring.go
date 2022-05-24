@@ -209,3 +209,17 @@ func (k *Keyring) ActiveKey() *Key {
 func (k *Keyring) TermKey(term uint32) *Key {
 	return k.keys[term]
 }
+
+func (k *Keyring) Clone() *Keyring {
+	clone := &Keyring{
+		rootKey:    k.rootKey,
+		activeTerm: k.activeTerm,
+		keys:       make(map[uint32]*Key, len(k.keys)),
+	}
+
+	for i, key := range k.keys {
+		clone.keys[i] = key
+	}
+
+	return clone
+}

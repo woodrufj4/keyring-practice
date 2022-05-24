@@ -20,7 +20,7 @@ func (dc DecryptCommand) Synopsis() string {
 
 func (dc DecryptCommand) Help() string {
 	helpText := `
-Usage: keying decrypt [options] <base64ciphertext>
+Usage: keying transit decrypt [options] <base64ciphertext>
 
   This decrypts a base64 encoded ciphertext into plain text.
 

@@ -22,6 +22,24 @@ type Config struct {
 	Options *bolt.Options `json:"options"`
 }
 
+func (c *Config) Merge(b *Config) *Config {
+	result := *c
+
+	if b.Path != "" {
+		result.Path = b.Path
+	}
+
+	if b.Filemode != 0 {
+		result.Filemode = b.Filemode
+	}
+
+	if b.Options != nil {
+		result.Options = b.Options
+	}
+
+	return &result
+}
+
 // DefaultConfig provides sane defaults for the bolt datastore
 func DefaultConfig() *Config {
 	return &Config{

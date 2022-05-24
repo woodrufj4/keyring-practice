@@ -3,6 +3,7 @@ module github.com/woodrufj4/keyring-practice
 go 1.18
 
 require (
+	github.com/hashicorp/go-secure-stdlib/kv-builder v0.1.2
 	github.com/mitchellh/cli v1.1.3
 	go.etcd.io/bbolt v1.3.6
 )
@@ -22,6 +23,7 @@ require (
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
+	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/mitchellh/reflectwalk v1.0.0 // indirect
 	github.com/posener/complete v1.1.1 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect

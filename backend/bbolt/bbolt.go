@@ -18,6 +18,11 @@ type BoltBackend struct {
 	db     *bolt.DB
 }
 
+// NewBoltBackend creates a new bolt backend with the
+// provided configuration.
+//
+// This does not setup or validate the backend. Be sure to
+// call Setup() to initialize the backend.
 func NewBoltBackend(config *Config) (backend.Backend, error) {
 
 	if config == nil {
@@ -71,6 +76,7 @@ func (b *BoltBackend) Cleanup(context.Context) error {
 }
 
 // Put persists data to the backend at the provided path.
+// If used on the same path, this will "patch" existing secret key value pairs.
 func (b *BoltBackend) Put(ctx context.Context, path string, entries []*backend.BackendEntry) error {
 
 	tx, err := b.db.Begin(true)
@@ -112,6 +118,7 @@ func (b *BoltBackend) Put(ctx context.Context, path string, entries []*backend.B
 
 }
 
+// Get retrieves key value pairs at the provided path.
 func (b *BoltBackend) Get(ctx context.Context, path string) ([]*backend.BackendEntry, error) {
 
 	tx, err := b.db.Begin(false)
@@ -156,6 +163,9 @@ func (b *BoltBackend) Get(ctx context.Context, path string) ([]*backend.BackendE
 	return entries, nil
 }
 
+// List reports all existing paths.
+// This can be used in conjunction with filtering or sorting operations.
+// By default, this does not provide filtering / sorting.
 func (b *BoltBackend) List(ctx context.Context) ([]string, error) {
 	tx, err := b.db.Begin(false)
 
@@ -189,6 +199,7 @@ func (b *BoltBackend) List(ctx context.Context) ([]string, error) {
 	return paths, nil
 }
 
+// Delete permanently deletes all secret key value pairs at the provided path.
 func (b *BoltBackend) Delete(ctx context.Context, path string) error {
 	tx, err := b.db.Begin(true)
 
@@ -199,6 +210,11 @@ func (b *BoltBackend) Delete(ctx context.Context, path string) error {
 	err = tx.DeleteBucket([]byte(path))
 
 	if err != nil {
+
+		if err == bolt.ErrBucketNotFound {
+			return tx.Commit()
+		}
+
 		rbErr := tx.Rollback()
 
 		if rbErr != nil {
