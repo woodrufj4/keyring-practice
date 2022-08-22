@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/hashicorp/go-secure-stdlib/kv-builder v0.1.2
 	github.com/mitchellh/cli v1.1.3
+	github.com/ryanuber/columnize v2.1.2+incompatible
 	go.etcd.io/bbolt v1.3.6
 )
 

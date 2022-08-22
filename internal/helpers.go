@@ -2,11 +2,13 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 
 	kvbuilder "github.com/hashicorp/go-secure-stdlib/kv-builder"
+	"github.com/ryanuber/columnize"
 	"github.com/woodrufj4/keyring-practice/backend"
 	"github.com/woodrufj4/keyring-practice/backend/bbolt"
 )
@@ -92,4 +94,31 @@ func SetupBackend(ctx context.Context, config *GeneralConfig) (backend.Backend, 
 	}
 
 	return nil, nil
+}
+
+func FormatTableOutput(entries []*backend.BackendEntry) (string, error) {
+
+	outputConfig := columnize.Config{
+		Delim: "♨",
+		Glue:  "    ",
+		Empty: "n/a",
+	}
+
+	outputArray := make([]string, 0)
+
+	outputArray = append(outputArray, fmt.Sprintf("Key%sValue", outputConfig.Delim))
+	outputArray = append(outputArray, fmt.Sprintf("---%s-----", outputConfig.Delim))
+
+	var entryValue interface{}
+
+	for _, entry := range entries {
+
+		if err := json.Unmarshal(entry.Value, &entryValue); err != nil {
+			return "", err
+		}
+
+		outputArray = append(outputArray, fmt.Sprintf("%s%s%v", entry.Key, outputConfig.Delim, entryValue))
+	}
+
+	return columnize.Format(outputArray, &outputConfig), nil
 }
