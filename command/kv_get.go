@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -140,12 +141,20 @@ func (kv *KVGetCommand) Run(args []string) int {
 		return 1
 	}
 
+	var entryValue interface{}
+
 	kv.ui.Output("============ Data ============")
 	kv.ui.Output("key\t\tValue")
 	kv.ui.Output("---\t\t-----")
 
 	for _, entry := range entries {
-		kv.ui.Output(fmt.Sprintf("%s\t\t%s", entry.Key, entry.Value))
+
+		if err = json.Unmarshal(entry.Value, &entryValue); err != nil {
+			kv.ui.Error(fmt.Sprintf("failed to unmarshal json: %s", err.Error()))
+			return 1
+		}
+
+		kv.ui.Output(fmt.Sprintf("%s\t\t%v", entry.Key, entryValue))
 	}
 
 	return 0
